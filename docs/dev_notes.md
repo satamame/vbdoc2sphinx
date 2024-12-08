@@ -13,7 +13,13 @@
 1. Bundler to use: esbuild
 1. Package manager to use: yarn
 
-## 推奨拡張機能のインストール
+## パッケージのインストール
+
+```
+> yarn add xml2js
+```
+
+## VSCode 拡張機能のインストール
 
 - ESLint
 - Extension Test Runner
@@ -28,3 +34,46 @@
 ## extension.ts
 
 - `registerCommand()` で `vbdoc2sphinx.pasteAsFunctionDirective` を登録するようにした。
+
+## Function ディレクティブの生成
+
+Function ディレクティブを生成するのに、`functionDeclaration` と、`docComment` (xml) の以下の要素を使う。
+
+- \<summary>
+- \<remarks>
+- \<param>
+- \<returns>
+- \<exception>
+
+以下のように変換する。
+
+```restructuredtext
+.. function:: [functionDeclaration]
+
+   [<summary> の内容]
+
+   [<summary> <remarks> 以外の要素の内容]
+   (要素の数だけ繰り返す)
+
+   [<remarks> の内容]
+   (要素の数だけ繰り返す)
+```
+
+### 各要素の変換
+
+1. \<summary> \<remarks> 要素は、要素のテキスト部分をそのまま使う。
+1. \<summary> \<remarks> 以外の要素は、以下のように変換する。
+    - \<param>
+        ```
+        :param [要素の name 属性の値]: [要素のテキスト部分]
+        :type [要素の name 属性の値]: [関数宣言から取得した、その引数の型] (この行はオプショナル)
+        ```
+    - \<returns>
+        ```
+        :returns: [要素のテキスト部分]
+        :rtype: [関数宣言から取得した、返り値の型] (この行はオプショナル)
+        ```
+    - \<exception>
+        ```
+        :raises [要素の cref 属性の値]: [要素のテキスト部分]
+        ```
