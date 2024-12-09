@@ -73,9 +73,7 @@ async function convertToSphinxDirective(
     docComment: string, functionDeclaration: string): Promise<string> {
 
   // ドキュメントコメントを XML としてパースする。
-  const parser = new xml2js.Parser({
-    explicitCharkey: true
-  });
+  const parser = new xml2js.Parser({ explicitCharkey: true });
   let xmlDoc;
   try {
     xmlDoc = await parser.parseStringPromise(`<root>${docComment}</root>`);
@@ -133,7 +131,82 @@ async function convertToSphinxDirective(
     });
   }
 
-  return sphinxDirective.trim();
+  return sphinxDirective.trim() + '\n';
+}
+
+/**
+ * ドキュメントコメントを MyST の function ディレクティブに変換する。
+ * @param docComment - ドキュメントコメント
+ * @param functionDeclaration - 関数宣言
+ * @returns - function ディレクティブ
+ */
+async function convertToMystDirective(
+    docComment: string, functionDeclaration: string): Promise<string> {
+
+  // ドキュメントコメントを XML としてパースする。
+  const parser = new xml2js.Parser({ explicitCharkey: true });
+  let xmlDoc;
+  try {
+    xmlDoc = await parser.parseStringPromise(`<root>${docComment}</root>`);
+  } catch (error) {
+    throw new Error('XML をパースできませんでした。\n' + error);
+  }
+
+  const docRoot = xmlDoc.root;
+  let mystDirective = `\`\`\`{function} ${functionDeclaration.trim()}\n\n`;
+
+  // <summary> の処理
+  if (docRoot.summary) {
+    const summaryLines = docRoot.summary[0]._.trim().split('\n');
+    for (let i = 0; i < summaryLines.length; i++) {
+      mystDirective += `${summaryLines[i].trim()}`;
+      if (i < summaryLines.length - 1) {
+        mystDirective += '  ';
+      }
+      mystDirective += '\n';
+    }
+    mystDirective += '\n';
+  }
+
+  // <param>, <returns>, <exception> の処理
+  const otherElements = [];
+  if (docRoot.param) {
+    docRoot.param.forEach((param: any) => {
+      const paramName = param.$.name;
+      const paramType = getParamType(functionDeclaration, paramName);
+      otherElements.push(`:param ${paramName}: ${param._.trim()}`);
+      if (paramType) {
+        otherElements.push(`:type ${paramName}: ${paramType}`);
+      }
+    });
+  }
+
+  if (docRoot.returns) {
+    const returnType = getReturnType(functionDeclaration);
+    otherElements.push(`:returns: ${docRoot.returns[0]._.trim()}`);
+    if (returnType) {
+      otherElements.push(`:rtype: ${returnType}`);
+    }
+  }
+
+  if (docRoot.exception) {
+    docRoot.exception.forEach((exception: any) => {
+      otherElements.push(`:raises ${exception.$.cref}: ${exception._.trim()}`);
+    });
+  }
+
+  if (otherElements.length > 0) {
+    mystDirective += `${otherElements.join(`\n`)}\n\n`;
+  }
+
+  // <remarks> の処理
+  if (docRoot.remarks) {
+    docRoot.remarks.forEach((remark: any) => {
+      mystDirective += `${remark._.trim()}\n`;
+    });
+  }
+
+  return mystDirective.trim() + '\n\`\`\`\n';
 }
 
 /**
@@ -163,11 +236,19 @@ async function pasteAsFunctionDirective() {
     return;
   }
 
-  // ドキュメントコメントを Sphinx の function ディレクティブに変換する。
-  let sphinxDirective: string;
+  // ドキュメントコメントを function ディレクティブに変換する。
+  let functionDirective: string;
+  const languageId = editor.document.languageId;
   try {
-    sphinxDirective
-      = await convertToSphinxDirective(parseResult.docComment, parseResult.functionDeclaration);
+    if (languageId === 'restructuredtext') {
+      functionDirective
+        = await convertToSphinxDirective(parseResult.docComment, parseResult.functionDeclaration);
+    } else if (languageId === 'markdown') {
+      functionDirective
+        = await convertToMystDirective(parseResult.docComment, parseResult.functionDeclaration);
+    } else {
+      throw new Error('このコマンドは reStructuredText または Markdown ファイルで有効です。');
+    }
   } catch (error) {
     vscode.window.showWarningMessage((error as Error).message);
   }
@@ -175,7 +256,7 @@ async function pasteAsFunctionDirective() {
   // function ディレクティブをエディタにペーストする。
   const selection = editor.selection;
   editor.edit(editBuilder => {
-    editBuilder.replace(selection, sphinxDirective);
+    editBuilder.replace(selection, functionDirective);
   });
 }
 

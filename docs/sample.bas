@@ -11,3 +11,11 @@ Public Function sampleFunc(ByVal number As Integer) _
     Debug.Print "sampleFunc running."
     sampleFunc = number * 2
 End Function
+
+''' <summary>サンプルプロシージャ</summary>
+''' <param name="number">数字</param>
+''' <remarks>返り値はありません。</remarks>
+Sub sampleProcedure(ByVal number As Integer)
+    Debug.Print "sampleProcedure running."
+    sampleProcedure = number * 2
+End Sub
