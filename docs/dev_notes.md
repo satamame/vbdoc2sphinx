@@ -35,6 +35,16 @@
 
 - `registerCommand()` で `vbdoc2sphinx.pasteAsFunctionDirective` を登録するようにした。
 
+## .vsix ファイルの作成
+
+package.json で `version` を更新して、
+
+```
+vsce package
+```
+
+# 仕様
+
 ## Function ディレクティブの生成
 
 Function ディレクティブを生成するのに、`functionDeclaration` と、`docComment` (xml) の以下の要素を使う。
