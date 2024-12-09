@@ -43,7 +43,8 @@ function parseVBDocComment(text: string): ParseResult {
           functionDeclaration = functionDeclaration.slice(0, -1); // '_' を削除する。
       }
 
-      isValid = /^(Public|Private|Friend|Protected)\s+(Function|Sub)\s+\w+/.test(functionDeclaration);
+      isValid = /^((Public|Private|Friend|Protected)\s+)?(Function|Sub)\s+\w+/
+        .test(functionDeclaration);
   }
 
   return { isValid, docComment, functionDeclaration };
