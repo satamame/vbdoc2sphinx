@@ -43,7 +43,7 @@ function parseVBDocComment(text: string): ParseResult {
           functionDeclaration = functionDeclaration.slice(0, -1); // '_' を削除する。
       }
 
-      isValid = /^((Public|Private|Friend|Protected)\s+)?(Function|Sub)\s+\w+/
+      isValid = /^((Public|Private|Friend|Protected)\s+)?(Function|Sub)\s+.+/
         .test(functionDeclaration);
   }
 
@@ -78,7 +78,7 @@ async function convertToSphinxDirective(
   try {
     xmlDoc = await parser.parseStringPromise(`<root>${docComment}</root>`);
   } catch (error) {
-    throw new Error('XML をパースできませんでした。\n' + error);
+    throw new Error('XML parse failed.\n' + error);
   }
 
   const docRoot = xmlDoc.root;
@@ -149,7 +149,7 @@ async function convertToMystDirective(
   try {
     xmlDoc = await parser.parseStringPromise(`<root>${docComment}</root>`);
   } catch (error) {
-    throw new Error('XML をパースできませんでした。\n' + error);
+    throw new Error('XML parse failed.\n' + error);
   }
 
   const docRoot = xmlDoc.root;
@@ -215,7 +215,7 @@ async function convertToMystDirective(
 async function pasteAsFunctionDirective() {
   const editor = vscode.window.activeTextEditor;
   if (!editor) {
-    vscode.window.showErrorMessage('アクティブなエディタが見つかりません。');
+    vscode.window.showErrorMessage('No active editor.');
     return;
   }
 
@@ -223,7 +223,7 @@ async function pasteAsFunctionDirective() {
   try {
     clipboardText = await vscode.env.clipboard.readText();
   } catch (error) {
-    vscode.window.showErrorMessage('クリップボードの内容を読み取れませんでした。');
+    vscode.window.showErrorMessage('No text read from clipboard.');
     return;
   }
 
@@ -232,7 +232,7 @@ async function pasteAsFunctionDirective() {
 
   if (!parseResult.isValid) {
     vscode.window.showWarningMessage(
-      'クリップボードの内容にドキュメントコメントまたは関数宣言が含まれていません。');
+      'No VB doc comment or function declaration in clipboard.');
     return;
   }
 
@@ -247,7 +247,7 @@ async function pasteAsFunctionDirective() {
       functionDirective
         = await convertToMystDirective(parseResult.docComment, parseResult.functionDeclaration);
     } else {
-      throw new Error('このコマンドは reStructuredText または Markdown ファイルで有効です。');
+      throw new Error('Only for reStructuredText or Markdown files.');
     }
   } catch (error) {
     vscode.window.showWarningMessage((error as Error).message);

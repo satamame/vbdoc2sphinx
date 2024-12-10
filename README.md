@@ -5,7 +5,7 @@ Insert Sphinx's Function directive based on clipboard if Visual Basic's document
 ## Installation
 
 1. Open VSCode Extensions panel.
-1. "Install from VSIX..." from "..." in upper right corner.
+1. "Install from VSIX..." from three-dot menu in upper right corner.
 1. Select "vbdoc2sphinx-x.x.x.vsix".
 
 ## Usage

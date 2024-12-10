@@ -2,7 +2,7 @@
   "name": "vbdoc2sphinx",
   "displayName": "VB Doc to Sphinx",
   "description": "Paste VB Doc comment as Sphinx function directive.",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "engines": {
     "vscode": "^1.95.0"
   },
