@@ -14,7 +14,10 @@ End Function
 
 ''' <summary>サンプルプロシージャ</summary>
 ''' <param name="number">数字</param>
-''' <remarks>返り値はありません。</remarks>
+''' <remarks>
+''' 返り値はありません。
+''' 複数行の remarks.
+''' </remarks>
 Sub サンプルプロシージャ(ByVal number As Integer)
     Debug.Print "sampleProcedure running."
     sampleProcedure = number * 2

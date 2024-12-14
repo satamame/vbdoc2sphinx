@@ -126,9 +126,11 @@ async function convertToSphinxDirective(
 
   // <remarks> の処理
   if (docRoot.remarks) {
-    docRoot.remarks.forEach((remark: any) => {
-      sphinxDirective += `${indent}${remark._.trim()}\n`;
-    });
+    const remarkLines = docRoot.remarks[0]._.trim().split('\n');
+    for (let i = 0; i < remarkLines.length; i++) {
+        sphinxDirective += `${indent}${remarkLines[i].trim()}\n`;
+    }
+    sphinxDirective += '\n';
   }
 
   return sphinxDirective.trim() + '\n';
@@ -201,9 +203,15 @@ async function convertToMystDirective(
 
   // <remarks> の処理
   if (docRoot.remarks) {
-    docRoot.remarks.forEach((remark: any) => {
-      mystDirective += `${remark._.trim()}\n`;
-    });
+    const remarkLines = docRoot.remarks[0]._.trim().split('\n');
+    for (let i = 0; i < remarkLines.length; i++) {
+      mystDirective += `${remarkLines[i].trim()}`;
+      if (i < remarkLines.length - 1) {
+        mystDirective += '  ';
+      }
+      mystDirective += '\n';
+    }
+    mystDirective += '\n';
   }
 
   return mystDirective.trim() + '\n\`\`\`\n';
